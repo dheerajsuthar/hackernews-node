@@ -1,53 +1,43 @@
 const { GraphQLServer } = require('graphql-yoga');
-const { Prisma } = require('prisma-binding')
+const db = require('../database/sequelize');
+const Link = require('../database/models/link');
 
 const resolvers = {
     Query: {
         info: () => 'Test',
-        feed: (root, args, context, info) => context.db.query.links({}, info)
+        feed: (root, args, context, info) => Link.findAll()
     },
 
     Mutation: {
         createLink: (root, args, context, info) => {
-            return context.db.mutation.createLink({
-                data: {
-                    url: args.url,
-                    description: args.description
-                }
-            }, info);
+            return Link.create({
+                url: args.url,
+                description: args.description
+            })
         },
         updateLink: (root, args, context, info) => {
-            return context.db.mutation.updateLink({
-                data: {
-                    id: args.id,
-                    url: args.url,
-                    description: args.description
-                }
-            }, info);
+            return Link.findOne({ where: { id: parseInt(args.id) } }).then(link => {
+                link.url = args.url;
+                link.description = args.description;
+                return link.save();
+            });
+
         },
-        deleteLink: (root, args, context, info) => {
-            return context.db.mutation.deleteLink({
-                data: {
-                    id: args.id
-                }
-            }, info);
-        }
-    }
+        deleteLink: (root, args, context, info) => (
+            Link.findOne({ where: { id: parseInt(args.id) } }).then(link => link.destroy())
+                .then(() => args.id)
+        )
+    },
 
 };
 
 const server = new GraphQLServer({
-    typeDefs: './src/schema.graphql',
+    typeDefs: './schema.graphql',
     resolvers,
     context: req => {
         return {
             ...req,
-            db: new Prisma({
-                typeDefs: 'src/generated/prisma.graphql',
-                endpoint: 'https://eu1.prisma.sh/dheeraj-suthar-1ff38a/database/dev',
-                secret: 'mysecret123',
-                debug: true
-            })
+            db
         }
     }
 });
