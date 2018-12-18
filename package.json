@@ -9,7 +9,9 @@
   "author": "Dheeraj Suthar",
   "license": "ISC",
   "dependencies": {
+    "bcrypt": "^1.0.3",
     "graphql-yoga": "^1.16.7",
+    "jsonwebtoken": "^8.4.0",
     "mysql2": "^1.6.4",
     "prisma-binding": "^2.2.11",
     "sequelize": "^4.42.0"

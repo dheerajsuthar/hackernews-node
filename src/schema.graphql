@@ -6,9 +6,22 @@ type Mutation {
     createLink(url: String!, description: String!): Link!
     updateLink(id: ID!, url: String!, description: String!): Link!
     deleteLink(id: ID!): ID!
+    signup(email: String!, password: String!, name: String!): AuthPayload!
+    login(email: String!, password: String!): AuthPayload!
 }
 type Link {
     id: ID!
     url: String!
     description: String!
+}
+
+type User {
+    id: ID!
+    name: String!
+    email: String!
+}
+
+type AuthPayload{
+    token: String!
+    user: User!
 }

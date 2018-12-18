@@ -1,4 +1,5 @@
 const link = require('./models/link');
+const user = require('./models/user');
 
 link.sync({ force: true }).then(link => {
     link.create({
@@ -12,3 +13,5 @@ link.sync({ force: true }).then(link => {
     }).then(() => console.log('saved link 2')
     );
 });
+
+user.sync({force: true}).then(()=>console.log('user table created!'));
