@@ -4,11 +4,13 @@ const Link = require('../database/models/link');
 const User = require('../database/models/user')
 const bcrypt = require('bcrypt');
 const token = require('jsonwebtoken');
+const JWT_KEY = 'coolkey';
 
 const resolvers = {
     Query: {
         info: () => 'Test',
-        feed: (root, args, context, info) => Link.findAll()
+        feed: (root, args, context, info) => Link.findAll(),
+        user: () => User.findAll()
     },
 
     Mutation: {
@@ -32,14 +34,25 @@ const resolvers = {
             ({ email, password, name } = args);
             let user = await User.findOne({ where: { email } });
             if (user) throw new Error(`User with email ${email} already exists!`);
-            console.log(password);
-
             let hash = await bcrypt.hash(password, 10);
             user = await User.create({ name, email, password: hash });
             return {
                 user,
-                token: token.sign(user.id, 'coolkey')
+                token: token.sign(user.id, JWT_KEY)
             };
+        },
+        login: async (root, args) => {
+            ({ email, password } = args);
+            let user = await User.findOne({ where: { email } });
+            if (!user) throw new Error(`User with email ${email} doesn't exists!`);
+            if (await bcrypt.compare(password, user.password)) {
+                return {
+                    user,
+                    token: token.sign(user.id, JWT_KEY)
+                }
+            } else {
+                throw new Error('Wrong user/password!');
+            }
         }
     },
 
