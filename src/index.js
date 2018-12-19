@@ -4,20 +4,23 @@ const Link = require('../database/models/link');
 const User = require('../database/models/user')
 const bcrypt = require('bcrypt');
 const token = require('jsonwebtoken');
-const JWT_KEY = 'coolkey';
+const { l, JWT_KEY, getUserIdFromToken } = require('./utils');
 
 const resolvers = {
     Query: {
         info: () => 'Test',
-        feed: (root, args, context, info) => Link.findAll(),
+        link: (root, args, context, info) => Link.findAll(),
         user: () => User.findAll()
     },
 
     Mutation: {
         createLink: async (root, args, context, info) => {
+            const userId = await getUserIdFromToken(context);
+            l(userId);
             return Link.create({
                 url: args.url,
-                description: args.description
+                description: args.description,
+                userId
             })
         },
         updateLink: async (root, args, context, info) => {
@@ -55,7 +58,12 @@ const resolvers = {
             }
         }
     },
-
+    Link: {
+        postedBy: (parent, args, context) => User.findOne({ where: { id: parent.userId } })
+    },
+    User: {
+        links: (parent, args, context) => Link.findAll({ where: { userId: parent.id } })
+    }
 };
 
 const server = new GraphQLServer({
