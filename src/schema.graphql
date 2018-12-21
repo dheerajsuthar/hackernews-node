@@ -1,3 +1,4 @@
+scalar DateTime
 type Query {
     info: String!
     link: [Link!]!
@@ -15,6 +16,7 @@ type Link {
     url: String!
     description: String!
     postedBy: User!
+    createdAt: DateTime
 }
 
 type User {
